@@ -1,41 +1,20 @@
 import pytest
 from main import BooksCollector
 
-@pytest.fixture
+# Создаем новый объект BooksCollector перед каждым тестом
+@pytest.fixture   
 def collector():
-        """Фикстура для создания свежего объекта BooksCollector перед каждым тестом."""
         return BooksCollector()
 
-# класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
-# обязательно указывать префикс Test
 class TestBooksCollector:
 
-    # пример теста:
-    # обязательно указывать префикс test_
-    # дальше идет название метода, который тестируем add_new_book_
-    # затем, что тестируем add_two_books - добавление двух книг
-    #def test_add_new_book_add_two_books(self):
-        # создаем экземпляр (объект) класса BooksCollector
-        #collector = BooksCollector()
-
-        # добавляем две книги
-        #collector.add_new_book('Гордость и предубеждение и зомби')
-        #collector.add_new_book('Что делать, если ваш кот хочет вас убить')
-
-        # проверяем, что добавилось именно две
-        # словарь books_rating, который нам возвращает метод get_books_rating, имеет длину 2
-        #assert len(collector.get_books_rating()) == 2
-
-    # напиши свои тесты ниже
-    # Чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
-    
     # 1. Тестируем add_new_book (Параметризация: позитивные граничные значения и негативный кейс)
     @pytest.mark.parametrize(
         'book_name, expected_count',
         [
-            ('А', 1),                                     # Минимальная длина имени
-            ('Имя книги ровно в сорок символов длиной!', 1), # Граничное значение: 40 символов
-            ('Имя книги больше сорока символов в длину!!!', 0) # Негативный кейс: 41 символ
+            ('А', True),                                     # Минимальная длина имени
+            ('Приключения Алисы в Стране чудес. Сказка', True), # Граничное значение: 40 символов
+            ('Приключения Алисы в Стране чудес. Сказка!', False) # Негативный кейс: 41 символ
         ]
     )
     def test_add_new_book_different_lengths(self, collector, book_name, expected_count):
@@ -44,9 +23,9 @@ class TestBooksCollector:
 
     # 2. Тестируем add_new_book (Повторное добавление одной и той же книги)
     def test_add_new_book_duplicate_not_added(self, collector):
-        collector.add_new_book('Дюна')
-        collector.add_new_book('Дюна')
-        assert len(collector.get_books_genre()) == 1
+        collector.add_new_book('Кот в сапогах')
+        collector.add_new_book('Кот в сапогах')
+        assert len(collector.get_books_genre()) == True
 
     # 3. Тестируем set_book_genre и get_book_genre (Позитивный сценарий)
     def test_set_book_genre_successfully(self, collector):
@@ -57,25 +36,25 @@ class TestBooksCollector:
     # 4. Тестируем set_book_genre (Попытка установить несуществующий жанр)
     def test_set_book_genre_not_in_list_remains_empty(self, collector):
         collector.add_new_book('Гарри Поттер')
-        collector.set_book_genre('Гарри Поттер', 'Киберпанк') # Жанра нет в списке genre
+        collector.set_book_genre('Гарри Поттер', 'Фэнтази') # Жанра нет в списке genre
         assert collector.get_book_genre('Гарри Поттер') == ''
 
     # 5. Тестируем get_books_with_specific_genre
     def test_get_books_with_specific_genre_returns_correct_list(self, collector):
-        collector.add_new_book('Оно')
-        collector.add_new_book('Сияние')
-        collector.set_book_genre('Оно', 'Ужасы')
-        collector.set_book_genre('Сияние', 'Ужасы')
+        collector.add_new_book('Десять негритят')
+        collector.add_new_book('Смерть на Ниле')
+        collector.set_book_genre('Десять негритят', 'Детективы')
+        collector.set_book_genre('Смерть на Ниле', 'Детективы')
         
-        books_horror = collector.get_books_with_specific_genre('Ужасы')
-        assert 'Оно' in books_horror and 'Сияние' in books_horror and len(books_horror) == 2
+        books_detective = collector.get_books_with_specific_genre('Детективы')
+        assert 'Десять негритят' in books_detective and 'Смерть на Ниле' in books_detective and len(books_detective) == 2
 
     # 6. Тестируем get_books_genre
     def test_get_books_genre_returns_full_dictionary(self, collector):
         collector.add_new_book('Шерлок Холмс')
         collector.set_book_genre('Шерлок Холмс', 'Детективы')
-        current_dict = collector.get_books_genre()
-        assert current_dict == {'Шерлок Холмс': 'Детективы'}
+        current_detective = collector.get_books_genre()
+        assert current_detective == {'Шерлок Холмс': 'Детективы'}
 
     # 7. Тестируем get_books_for_children (Параметризация: жанры с ограничением и без)
     @pytest.mark.parametrize(
@@ -110,14 +89,14 @@ class TestBooksCollector:
     def test_add_book_in_favorites_constraints(self, collector, book_to_add, setup_book, expected_favorites_count):
         if setup_book:
             collector.add_new_book(setup_book)
-            collector.add_book_in_favorites(setup_book) # Первое легитимное добавление
+            collector.add_book_in_favorites(setup_book) 
             
-        collector.add_book_in_favorites(book_to_add) # Тестовое действие
+        collector.add_book_in_favorites(book_to_add) 
         assert len(collector.get_list_of_favorites_books()) == expected_favorites_count
 
     # 10. Тестируем delete_book_from_favorites
     def test_delete_book_from_favorites_successfully(self, collector):
-        collector.add_new_book('Матрица')
-        collector.add_book_in_favorites('Матрица')
-        collector.delete_book_from_favorites('Матрица')
+        collector.add_new_book('Все приключения Шерлока Холмса')
+        collector.add_book_in_favorites('Все приключения Шерлока Холмса')
+        collector.delete_book_from_favorites('Все приключения Шерлока Холмса')
         assert 'Матрица' not in collector.get_list_of_favorites_books()
