@@ -1,24 +1,84 @@
+import pytest
 from main import BooksCollector
 
-# класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
-# обязательно указывать префикс Test
 class TestBooksCollector:
 
-    # пример теста:
-    # обязательно указывать префикс test_
-    # дальше идет название метода, который тестируем add_new_book_
-    # затем, что тестируем add_two_books - добавление двух книг
-    def test_add_new_book_add_two_books(self):
-        # создаем экземпляр (объект) класса BooksCollector
-        collector = BooksCollector()
+    # 1. Тестируем add_new_book (Параметризация: позитивные граничные значения и негативный кейс)
+    @pytest.mark.parametrize(
+        'book_name, expected_count',
+        [
+            ('А', True),                                     # Минимальная длина имени
+            ('Приключения Алисы в Стране чудес. Сказка', True), # Граничное значение: 40 символов
+            ('Приключения Алисы в Стране чудес. Сказка!', False) # Негативный кейс: 41 символ
+        ]
+    )
+    def test_add_new_book_different_lengths(self, collector, book_name, expected_count):
+        collector.add_new_book(book_name)
+        assert len(collector.get_books_genre()) == expected_count
 
-        # добавляем две книги
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Что делать, если ваш кот хочет вас убить')
+    # 2. Тестируем add_new_book (Повторное добавление одной и той же книги)
+    def test_add_new_book_duplicate_not_added(self, collector):
+        collector.add_new_book('Кот в сапогах')
+        collector.add_new_book('Кот в сапогах')
+        assert len(collector.get_books_genre()) == 1
 
-        # проверяем, что добавилось именно две
-        # словарь books_rating, который нам возвращает метод get_books_rating, имеет длину 2
-        assert len(collector.get_books_rating()) == 2
+    # 3. Тестируем set_book_genre и get_book_genre (Позитивный сценарий)
+    def test_set_book_genre_successfully(self, collector):
+        collector.add_new_book('Дракула')
+        collector.set_book_genre('Дракула', 'Ужасы')
+        assert collector.get_book_genre('Дракула') == 'Ужасы'
 
-    # напиши свои тесты ниже
-    # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
+    # 4. Тестируем set_book_genre (Попытка установить несуществующий жанр)
+    def test_set_book_genre_not_in_list_remains_empty(self, collector):
+        collector.add_new_book('Гарри Поттер')
+        collector.set_book_genre('Гарри Поттер', 'Фэнтази') # Жанра нет в списке genre
+        assert collector.get_book_genre('Гарри Поттер') == ''
+
+    # 5. Тестируем get_books_with_specific_genre 
+    def test_get_books_with_specific_genre_returns_book(self, collector):
+        collector.add_new_book('Десять негритят')
+        collector.set_book_genre('Десять негритят', 'Детективы')
+    
+        assert collector.get_books_with_specific_genre('Детективы') == ['Десять негритят']
+
+    # 6. Тестируем get_books_genre
+    def test_get_books_genre_returns_full_dictionary(self, collector):
+        collector.add_new_book('Шерлок Холмс')
+        collector.set_book_genre('Шерлок Холмс', 'Детективы')
+        current_detective = collector.get_books_genre()
+        assert current_detective == {'Шерлок Холмс': 'Детективы'}
+
+    # 7. Тестируем get_books_for_children (Параметризация: жанры с ограничением и без)
+    @pytest.mark.parametrize(
+        'book_name, genre, is_for_children',
+        [
+            ('Колобок', 'Мультфильмы', True),   # Нет в genre_age_rating
+            ('Оно', 'Ужасы', False),            # Есть в genre_age_rating
+            ('Шерлок', 'Детективы', False)       # Есть в genre_age_rating
+        ]
+    )
+    def test_get_books_for_children_filtering(self, collector, book_name, genre, is_for_children):
+        collector.add_new_book(book_name)
+        collector.set_book_genre(book_name, genre)
+        
+        children_books = collector.get_books_for_children()
+        assert (book_name in children_books) == is_for_children
+
+    # 8. Тестируем add_book_in_favorites и get_list_of_favorites_books
+    def test_add_book_in_favorites_successfully(self, collector):
+        collector.add_new_book('Властелин Колец')
+        collector.add_book_in_favorites('Властелин Колец')
+        assert collector.get_list_of_favorites_books() == ['Властелин Колец']
+
+    # 9. Тестируем add_book_in_favorites (Попытка добавить в избранное книгу, которой нет в BooksCollector)
+    def test_add_book_in_favorites_not_in_collector_not_added(self, collector):
+  
+        collector.add_book_in_favorites('Неизвестная')
+        assert len(collector.get_list_of_favorites_books()) == 0
+
+    # 10. Тестируем delete_book_from_favorites
+    def test_delete_book_from_favorites_successfully(self, collector):
+        collector.add_new_book('Все приключения Шерлока Холмса')
+        collector.add_book_in_favorites('Все приключения Шерлока Холмса')
+        collector.delete_book_from_favorites('Все приключения Шерлока Холмса')
+        assert 'Матрица' not in collector.get_list_of_favorites_books()
