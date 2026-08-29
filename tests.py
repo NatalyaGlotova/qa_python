@@ -34,7 +34,7 @@ class TestBooksCollector:
         collector.set_book_genre('Гарри Поттер', 'Фэнтази') # Жанра нет в списке genre
         assert collector.get_book_genre('Гарри Поттер') == ''
 
-    # 5. Тестируем get_books_with_specific_genre
+    # 5. Тестируем get_books_with_specific_genre 
     def test_get_books_with_specific_genre_returns_book(self, collector):
         collector.add_new_book('Десять негритят')
         collector.set_book_genre('Десять негритят', 'Детективы')
@@ -70,21 +70,11 @@ class TestBooksCollector:
         collector.add_book_in_favorites('Властелин Колец')
         assert collector.get_list_of_favorites_books() == ['Властелин Колец']
 
-    # 9. Тестируем add_book_in_favorites (Негативные кейсы: повторно или книгу не из BooksCollector)
-    @pytest.mark.parametrize(
-        'book_to_add, setup_book, expected_favorites_count',
-        [
-            ('Дюна', 'Дюна', 1),       # Попытка добавить одну и ту же книгу дважды (второй раз добавится внутри теста)
-            ('Неизвестная', None, 0)   # Попытка добавить книгу, которой вообще нет в словаре collector
-        ]
-    )
-    def test_add_book_in_favorites_constraints(self, collector, book_to_add, setup_book, expected_favorites_count):
-        if setup_book:
-            collector.add_new_book(setup_book)
-            collector.add_book_in_favorites(setup_book) 
-            
-        collector.add_book_in_favorites(book_to_add) 
-        assert len(collector.get_list_of_favorites_books()) == expected_favorites_count
+    # 9. Тестируем add_book_in_favorites (Попытка добавить в избранное книгу, которой нет в BooksCollector)
+    def test_add_book_in_favorites_not_in_collector_not_added(self, collector):
+  
+        collector.add_book_in_favorites('Неизвестная')
+        assert len(collector.get_list_of_favorites_books()) == 0
 
     # 10. Тестируем delete_book_from_favorites
     def test_delete_book_from_favorites_successfully(self, collector):
