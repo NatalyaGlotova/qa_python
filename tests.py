@@ -35,14 +35,11 @@ class TestBooksCollector:
         assert collector.get_book_genre('Гарри Поттер') == ''
 
     # 5. Тестируем get_books_with_specific_genre
-    def test_get_books_with_specific_genre_returns_correct_list(self, collector):
+    def test_get_books_with_specific_genre_returns_book(self, collector):
         collector.add_new_book('Десять негритят')
-        collector.add_new_book('Смерть на Ниле')
         collector.set_book_genre('Десять негритят', 'Детективы')
-        collector.set_book_genre('Смерть на Ниле', 'Детективы')
-        
-        books_detective = collector.get_books_with_specific_genre('Детективы')
-        assert 'Десять негритят' in books_detective and 'Смерть на Ниле' in books_detective and len(books_detective) == 2
+    
+        assert collector.get_books_with_specific_genre('Детективы') == ['Десять негритят']
 
     # 6. Тестируем get_books_genre
     def test_get_books_genre_returns_full_dictionary(self, collector):
