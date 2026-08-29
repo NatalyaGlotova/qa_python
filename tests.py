@@ -1,11 +1,6 @@
 import pytest
 from main import BooksCollector
 
-# Создаем новый объект BooksCollector перед каждым тестом
-@pytest.fixture   
-def collector():
-        return BooksCollector()
-
 class TestBooksCollector:
 
     # 1. Тестируем add_new_book (Параметризация: позитивные граничные значения и негативный кейс)
