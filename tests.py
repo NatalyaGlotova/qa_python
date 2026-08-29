@@ -20,7 +20,7 @@ class TestBooksCollector:
     def test_add_new_book_duplicate_not_added(self, collector):
         collector.add_new_book('Кот в сапогах')
         collector.add_new_book('Кот в сапогах')
-        assert len(collector.get_books_genre()) == True
+        assert len(collector.get_books_genre()) == 1
 
     # 3. Тестируем set_book_genre и get_book_genre (Позитивный сценарий)
     def test_set_book_genre_successfully(self, collector):
